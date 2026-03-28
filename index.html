@@ -316,7 +316,7 @@ const CONFIG = {
   tienda:    "Mi Tienda Celulares",
   subtitulo: "Llevate tu cel hoy · Pagás cómodo cada semana",
   whatsapp:  "5491112345678",  // ← Tu número con código de país, sin + ni espacios
-  moneda:    "ARS",            // ARS = pesos argentinos | USD | MXN | COP …
+  moneda:    "PYG",            // PYG = Guaraníes paraguayos
 
   /* ── Planes de cuotas semanales ──
      interesRate = porcentaje total sobre el precio base
@@ -338,42 +338,42 @@ const CONFIG = {
   celulares: [
     {
       nombre: "Samsung Galaxy A15",
-      precio: 180000,
+      precio: 380000,
       imagen: "",
       specs: ["6.5\" FHD+", "50 MP cámara", "5000 mAh", "4GB RAM / 128GB"],
       badge: "MÁS VENDIDO",
     },
     {
       nombre: "Motorola Moto G54",
-      precio: 210000,
+      precio: 490000,
       imagen: "",
       specs: ["6.5\" IPS", "50 MP cámara", "5000 mAh", "8GB RAM / 256GB"],
       badge: "NUEVO",
     },
     {
       nombre: "Xiaomi Redmi 13C",
-      precio: 150000,
+      precio: 320000,
       imagen: "",
       specs: ["6.74\" HD+", "50 MP cámara", "5000 mAh", "4GB RAM / 128GB"],
       badge: "",
     },
     {
       nombre: "Samsung Galaxy A35",
-      precio: 320000,
+      precio: 750000,
       imagen: "",
       specs: ["6.6\" AMOLED", "50 MP cámara", "5000 mAh", "6GB RAM / 128GB"],
       badge: "OFERTA",
     },
     {
       nombre: "Motorola Edge 50 Neo",
-      precio: 480000,
+      precio: 1100000,
       imagen: "",
       specs: ["6.36\" pOLED", "50 MP cámara", "4310 mAh", "12GB RAM / 256GB"],
       badge: "",
     },
     {
       nombre: "iPhone 13",
-      precio: 900000,
+      precio: 2100000,
       imagen: "",
       specs: ["6.1\" OLED", "12 MP doble cámara", "Face ID", "128GB"],
       badge: "PREMIUM",
@@ -387,9 +387,7 @@ const CONFIG = {
 ================================================================ */
 
 /* Formatear moneda */
-const fmt = (n) => new Intl.NumberFormat('es-AR', {
-  style: 'currency',
-  currency: CONFIG.moneda,
+const fmt = (n) => '₲ ' + new Intl.NumberFormat('es-PY', {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 }).format(n);
