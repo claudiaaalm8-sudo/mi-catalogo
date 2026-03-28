@@ -305,19 +305,31 @@ const CONFIG = {
   whatsapp:  "5491112345678",  // ← Tu número con código de país, sin + ni espacios
   moneda:    "PYG",            // PYG = Guaraníes paraguayos
 
-  /* ── Planes: solo define las semanas disponibles ── */
+  /* ── Planes: semanas disponibles ── */
   planes: [4, 6, 8],
 
+  /* ════════════════════════════════════════════════════════════════
+     TABLA DE INTERESES  ←  MODIFICÁ AQUÍ LOS PORCENTAJES
+     Cada fila corresponde a un celular (mismo orden que la lista)
+     0.10 = 10%  |  0.15 = 15%  |  0.20 = 20%  |  0.25 = 25%
+                          4 sem    6 sem    8 sem
+  ════════════════════════════════════════════════════════════════ */
+  intereses: [
+    /* Samsung Galaxy A15  */ { 4: 0.10,  6: 0.18,  8: 0.28 },
+    /* Motorola Moto G54   */ { 4: 0.12,  6: 0.20,  8: 0.30 },
+    /* Xiaomi Redmi 13C    */ { 4: 0.10,  6: 0.18,  8: 0.28 },
+    /* Samsung Galaxy A35  */ { 4: 0.15,  6: 0.22,  8: 0.32 },
+    /* Motorola Edge 50 Neo*/ { 4: 0.15,  6: 0.25,  8: 0.35 },
+    /* iPhone 13           */ { 4: 0.18,  6: 0.28,  8: 0.40 },
+  ],
+
   /* ── Celulares ──
-     Campos:
-       nombre    → nombre del equipo
-       precio    → precio base (solo para calcular, el cliente NO lo ve)
-       imagen    → URL de la foto (dejá "" para ícono genérico)
-       specs     → array de características (máx 4 recomendado)
-       badge     → "MÁS VENDIDO" | "NUEVO" | "OFERTA" | "" (vacío = sin etiqueta)
-       intereses → interés POR PLAN para este celular
-                   0.10 = 10% · 0.15 = 15% · 0.20 = 20% ...
-  ─────────────────────────────────────────────────────────────────── */
+     nombre  → nombre del equipo
+     precio  → precio base (solo vos lo ves, el cliente NO)
+     imagen  → URL de la foto  (dejá "" para ícono genérico)
+     specs   → hasta 4 características
+     badge   → "MÁS VENDIDO" | "NUEVO" | "OFERTA" | ""
+  ─────────────────────────────────────────────────────────────── */
   celulares: [
     {
       nombre: "Samsung Galaxy A15",
@@ -325,7 +337,6 @@ const CONFIG = {
       imagen: "",
       specs: ["6.5\" FHD+", "50 MP cámara", "5000 mAh", "4GB RAM / 128GB"],
       badge: "MÁS VENDIDO",
-      intereses: { 4: 0.10, 6: 0.18, 8: 0.28 },
     },
     {
       nombre: "Motorola Moto G54",
@@ -333,7 +344,6 @@ const CONFIG = {
       imagen: "",
       specs: ["6.5\" IPS", "50 MP cámara", "5000 mAh", "8GB RAM / 256GB"],
       badge: "NUEVO",
-      intereses: { 4: 0.12, 6: 0.20, 8: 0.30 },
     },
     {
       nombre: "Xiaomi Redmi 13C",
@@ -341,7 +351,6 @@ const CONFIG = {
       imagen: "",
       specs: ["6.74\" HD+", "50 MP cámara", "5000 mAh", "4GB RAM / 128GB"],
       badge: "",
-      intereses: { 4: 0.10, 6: 0.18, 8: 0.28 },
     },
     {
       nombre: "Samsung Galaxy A35",
@@ -349,7 +358,6 @@ const CONFIG = {
       imagen: "",
       specs: ["6.6\" AMOLED", "50 MP cámara", "5000 mAh", "6GB RAM / 128GB"],
       badge: "OFERTA",
-      intereses: { 4: 0.15, 6: 0.22, 8: 0.32 },
     },
     {
       nombre: "Motorola Edge 50 Neo",
@@ -357,7 +365,6 @@ const CONFIG = {
       imagen: "",
       specs: ["6.36\" pOLED", "50 MP cámara", "4310 mAh", "12GB RAM / 256GB"],
       badge: "",
-      intereses: { 4: 0.15, 6: 0.25, 8: 0.35 },
     },
     {
       nombre: "iPhone 13",
@@ -365,7 +372,6 @@ const CONFIG = {
       imagen: "",
       specs: ["6.1\" OLED", "12 MP doble cámara", "Face ID", "128GB"],
       badge: "PREMIUM",
-      intereses: { 4: 0.18, 6: 0.28, 8: 0.40 },
     },
   ],
 
@@ -381,9 +387,10 @@ const fmt = (n) => '₲ ' + new Intl.NumberFormat('es-PY', {
   maximumFractionDigits: 0,
 }).format(n);
 
-/* Calcular cuota semanal usando el interés propio del celular */
-function calcCuota(phone, semanas) {
-  const interes = phone.intereses[semanas];
+/* Calcular cuota semanal */
+function calcCuota(idx, semanas) {
+  const phone   = CONFIG.celulares[idx];
+  const interes = CONFIG.intereses[idx][semanas];
   return Math.ceil((phone.precio * (1 + interes)) / semanas);
 }
 
@@ -401,7 +408,7 @@ const PHONE_ICON = `<div class="no-img">📱</div>`;
 /* Crear tarjeta HTML */
 function crearTarjeta(phone, idx) {
   const semInicial   = CONFIG.planes[0];
-  const cuotaInicial = calcCuota(phone, semInicial);
+  const cuotaInicial = calcCuota(idx, semInicial);
 
   const tabsHTML = CONFIG.planes.map((s, i) =>
     `<button class="tab-btn${i === 0 ? ' active' : ''}"
@@ -442,7 +449,7 @@ function crearTarjeta(phone, idx) {
 /* Seleccionar plan en una tarjeta */
 function selPlan(idx, semanas) {
   const phone = CONFIG.celulares[idx];
-  const cuota = calcCuota(phone, semanas);
+  const cuota = calcCuota(idx, semanas);
 
   document.getElementById(`cuota-${idx}`).textContent   = fmt(cuota);
   document.getElementById(`detalle-${idx}`).textContent = `${semanas} cuotas semanales`;
