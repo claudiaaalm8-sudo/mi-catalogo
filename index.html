@@ -178,19 +178,6 @@
       border-radius: 50px;
     }
 
-    /* Precio base */
-    .precio-base {
-      font-size: .85rem;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
-    .precio-base strong {
-      font-size: 1.4rem;
-      color: var(--text);
-      font-weight: 800;
-      margin-left: 4px;
-    }
-
     /* Tabs de cuotas */
     .plan-tabs {
       display: flex;
@@ -318,22 +305,18 @@ const CONFIG = {
   whatsapp:  "5491112345678",  // ← Tu número con código de país, sin + ni espacios
   moneda:    "PYG",            // PYG = Guaraníes paraguayos
 
-  /* ── Planes de cuotas semanales ──
-     interesRate = porcentaje total sobre el precio base
-     Ejemplo: 0.15 = 15% de recargo sobre el precio contado            */
-  planes: [
-    { semanas: 4, interes: 0.10 },   // 10% de recargo en 4 semanas
-    { semanas: 6, interes: 0.18 },   // 18% de recargo en 6 semanas
-    { semanas: 8, interes: 0.28 },   // 28% de recargo en 8 semanas
-  ],
+  /* ── Planes: solo define las semanas disponibles ── */
+  planes: [4, 6, 8],
 
   /* ── Celulares ──
      Campos:
        nombre    → nombre del equipo
-       precio    → precio contado en la moneda configurada
-       imagen    → URL de la foto (dejá "" para mostrar ícono genérico)
+       precio    → precio base (solo para calcular, el cliente NO lo ve)
+       imagen    → URL de la foto (dejá "" para ícono genérico)
        specs     → array de características (máx 4 recomendado)
-       badge     → etiqueta opcional: "MÁS VENDIDO" | "NUEVO" | "OFERTA" | ""
+       badge     → "MÁS VENDIDO" | "NUEVO" | "OFERTA" | "" (vacío = sin etiqueta)
+       intereses → interés POR PLAN para este celular
+                   0.10 = 10% · 0.15 = 15% · 0.20 = 20% ...
   ─────────────────────────────────────────────────────────────────── */
   celulares: [
     {
@@ -342,6 +325,7 @@ const CONFIG = {
       imagen: "",
       specs: ["6.5\" FHD+", "50 MP cámara", "5000 mAh", "4GB RAM / 128GB"],
       badge: "MÁS VENDIDO",
+      intereses: { 4: 0.10, 6: 0.18, 8: 0.28 },
     },
     {
       nombre: "Motorola Moto G54",
@@ -349,6 +333,7 @@ const CONFIG = {
       imagen: "",
       specs: ["6.5\" IPS", "50 MP cámara", "5000 mAh", "8GB RAM / 256GB"],
       badge: "NUEVO",
+      intereses: { 4: 0.12, 6: 0.20, 8: 0.30 },
     },
     {
       nombre: "Xiaomi Redmi 13C",
@@ -356,6 +341,7 @@ const CONFIG = {
       imagen: "",
       specs: ["6.74\" HD+", "50 MP cámara", "5000 mAh", "4GB RAM / 128GB"],
       badge: "",
+      intereses: { 4: 0.10, 6: 0.18, 8: 0.28 },
     },
     {
       nombre: "Samsung Galaxy A35",
@@ -363,6 +349,7 @@ const CONFIG = {
       imagen: "",
       specs: ["6.6\" AMOLED", "50 MP cámara", "5000 mAh", "6GB RAM / 128GB"],
       badge: "OFERTA",
+      intereses: { 4: 0.15, 6: 0.22, 8: 0.32 },
     },
     {
       nombre: "Motorola Edge 50 Neo",
@@ -370,6 +357,7 @@ const CONFIG = {
       imagen: "",
       specs: ["6.36\" pOLED", "50 MP cámara", "4310 mAh", "12GB RAM / 256GB"],
       badge: "",
+      intereses: { 4: 0.15, 6: 0.25, 8: 0.35 },
     },
     {
       nombre: "iPhone 13",
@@ -377,6 +365,7 @@ const CONFIG = {
       imagen: "",
       specs: ["6.1\" OLED", "12 MP doble cámara", "Face ID", "128GB"],
       badge: "PREMIUM",
+      intereses: { 4: 0.18, 6: 0.28, 8: 0.40 },
     },
   ],
 
@@ -392,9 +381,10 @@ const fmt = (n) => '₲ ' + new Intl.NumberFormat('es-PY', {
   maximumFractionDigits: 0,
 }).format(n);
 
-/* Calcular cuota semanal */
-function calcCuota(precio, semanas, interes) {
-  return Math.ceil((precio * (1 + interes)) / semanas);
+/* Calcular cuota semanal usando el interés propio del celular */
+function calcCuota(phone, semanas) {
+  const interes = phone.intereses[semanas];
+  return Math.ceil((phone.precio * (1 + interes)) / semanas);
 }
 
 /* Construir link de WhatsApp */
@@ -410,14 +400,14 @@ const PHONE_ICON = `<div class="no-img">📱</div>`;
 
 /* Crear tarjeta HTML */
 function crearTarjeta(phone, idx) {
-  const planInicial = CONFIG.planes[0];
-  const cuotaInicial = calcCuota(phone.precio, planInicial.semanas, planInicial.interes);
+  const semInicial   = CONFIG.planes[0];
+  const cuotaInicial = calcCuota(phone, semInicial);
 
-  const tabsHTML = CONFIG.planes.map((p, i) =>
+  const tabsHTML = CONFIG.planes.map((s, i) =>
     `<button class="tab-btn${i === 0 ? ' active' : ''}"
-             onclick="selPlan(${idx}, ${p.semanas})"
-             data-semanas="${p.semanas}">
-       ${p.semanas} sem
+             onclick="selPlan(${idx}, ${s})"
+             data-semanas="${s}">
+       ${s} semanas
      </button>`
   ).join('');
 
@@ -426,9 +416,6 @@ function crearTarjeta(phone, idx) {
     ? `<img src="${phone.imagen}" alt="${phone.nombre}" onerror="this.parentNode.innerHTML='${PHONE_ICON}'" />`
     : PHONE_ICON;
 
-  const precioTotal = (phone.precio * (1 + planInicial.interes)).toFixed(0);
-  const waLink = linkWA(phone, planInicial.semanas, cuotaInicial);
-
   return `
   <div class="card" id="card-${idx}">
     ${phone.badge ? `<span class="badge">${phone.badge}</span>` : ''}
@@ -436,18 +423,13 @@ function crearTarjeta(phone, idx) {
     <div class="card-body">
       <h3>${phone.nombre}</h3>
       <div class="specs">${specsHTML}</div>
-      <div class="precio-base">
-        Precio contado: <strong id="precio-${idx}">${fmt(phone.precio)}</strong>
-      </div>
       <div class="plan-tabs" id="tabs-${idx}">${tabsHTML}</div>
       <div class="cuota-display">
-        <span class="cuota-label">Cuota semanal</span>
+        <span class="cuota-label">Pagás por semana</span>
         <span class="cuota-valor" id="cuota-${idx}">${fmt(cuotaInicial)}</span>
-        <span class="cuota-detalle" id="detalle-${idx}">
-          ${planInicial.semanas} semanas · total ${fmt(Math.ceil(phone.precio * (1 + planInicial.interes)))}
-        </span>
+        <span class="cuota-detalle" id="detalle-${idx}">${semInicial} cuotas semanales</span>
       </div>
-      <a class="btn-wa" id="wa-${idx}" href="${waLink}" target="_blank" rel="noopener">
+      <a class="btn-wa" id="wa-${idx}" href="${linkWA(phone, semInicial, cuotaInicial)}" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
@@ -460,17 +442,14 @@ function crearTarjeta(phone, idx) {
 /* Seleccionar plan en una tarjeta */
 function selPlan(idx, semanas) {
   const phone = CONFIG.celulares[idx];
-  const plan  = CONFIG.planes.find(p => p.semanas === semanas);
-  const cuota = calcCuota(phone.precio, semanas, plan.interes);
-  const total = Math.ceil(phone.precio * (1 + plan.interes));
+  const cuota = calcCuota(phone, semanas);
 
-  document.getElementById(`cuota-${idx}`).textContent  = fmt(cuota);
-  document.getElementById(`detalle-${idx}`).textContent =
-    `${semanas} semanas · total ${fmt(total)}`;
+  document.getElementById(`cuota-${idx}`).textContent   = fmt(cuota);
+  document.getElementById(`detalle-${idx}`).textContent = `${semanas} cuotas semanales`;
   document.getElementById(`wa-${idx}`).href = linkWA(phone, semanas, cuota);
 
-  const tabs = document.querySelectorAll(`#tabs-${idx} .tab-btn`);
-  tabs.forEach(t => t.classList.toggle('active', +t.dataset.semanas === semanas));
+  document.querySelectorAll(`#tabs-${idx} .tab-btn`)
+    .forEach(t => t.classList.toggle('active', +t.dataset.semanas === semanas));
 }
 
 /* Renderizar todo */
