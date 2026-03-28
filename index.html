@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catálogo Celulares</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       COLORES Y VARIABLES — cambiá lo que quieras
+    ============================================= */
+    :root {
+      --primary:    #6C63FF;
+      --primary-dk: #4B44CC;
+      --accent:     #FF6584;
+      --bg:         #F4F4FB;
+      --card:       #FFFFFF;
+      --text:       #22223B;
+      --muted:      #888;
+      --green:      #25D366;
+      --radius:     18px;
+      --shadow:     0 6px 24px rgba(108,99,255,0.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
+      color: #fff;
+      text-align: center;
+      padding: 60px 20px 50px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      width: 350px; height: 350px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      top: -80px; right: -80px;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      bottom: -60px; left: -40px;
+    }
+    header h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -1px; }
+    header p  { font-size: clamp(1rem, 2.5vw, 1.2rem); margin-top: 10px; opacity: .85; }
+    .btn-hero {
+      display: inline-block;
+      margin-top: 28px;
+      padding: 14px 36px;
+      background: #fff;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+      position: relative; z-index: 1;
+    }
+    .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+
+    /* ─── SECCIÓN CATÁLOGO ─── */
+    #catalogo {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 50px 20px 60px;
+    }
+    #catalogo h2 {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 36px;
+      color: var(--text);
+    }
+    #catalogo h2 span { color: var(--primary); }
+
+    /* ─── GRID DE TARJETAS ─── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 28px;
+    }
+
+    /* ─── TARJETA ─── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .25s, box-shadow .25s;
+      position: relative;
+    }
+    .card:hover { transform: translateY(-6px); box-shadow: 0 14px 40px rgba(108,99,255,0.18); }
+
+    /* Badge */
+    .badge {
+      position: absolute;
+      top: 16px; left: 16px;
+      background: var(--accent);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .5px;
+      padding: 5px 12px;
+      border-radius: 50px;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+
+    /* Imagen */
+    .card-img {
+      background: #f0f0fa;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .card-img img {
+      max-height: 180px;
+      max-width: 90%;
+      object-fit: contain;
+      transition: transform .3s;
+    }
+    .card:hover .card-img img { transform: scale(1.05); }
+    .card-img .no-img {
+      font-size: 5rem;
+      opacity: .35;
+      user-select: none;
+    }
+
+    /* Cuerpo */
+    .card-body {
+      padding: 20px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .card-body h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    /* Specs */
+    .specs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .spec-pill {
+      background: #eef0ff;
+      color: var(--primary);
+      font-size: .72rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 50px;
+    }
+
+    /* Precio base */
+    .precio-base {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .precio-base strong {
+      font-size: 1.4rem;
+      color: var(--text);
+      font-weight: 800;
+      margin-left: 4px;
+    }
+
+    /* Tabs de cuotas */
+    .plan-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 7px 4px;
+      font-family: 'Poppins', sans-serif;
+      font-size: .78rem;
+      font-weight: 600;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--primary);
+      cursor: pointer;
+      transition: all .18s;
+    }
+    .tab-btn:hover { background: #eef0ff; }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* Display cuota semanal */
+    .cuota-display {
+      background: #f6f5ff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      min-height: 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .cuota-label { font-size: .75rem; color: var(--muted); }
+    .cuota-valor {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+    .cuota-detalle { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+
+    /* Botón WhatsApp */
+    .btn-wa {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px;
+      background: var(--green);
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: .9rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .2s, transform .2s;
+    }
+    .btn-wa:hover { background: #1aa853; transform: translateY(-2px); }
+    .btn-wa svg { width: 20px; height: 20px; fill: #fff; flex-shrink: 0; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center;
+      padding: 30px 20px;
+      background: var(--text);
+      color: rgba(255,255,255,.6);
+      font-size: .85rem;
+    }
+    footer strong { color: #fff; }
+
+    @media (max-width: 400px) {
+      .plan-tabs { flex-direction: row; }
+      .tab-btn { font-size: .7rem; padding: 6px 2px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 id="titulo-tienda">📱 Mi Tienda Celulares</h1>
+  <p id="subtitulo-tienda">Llevate tu cel hoy · Pagás cómodo cada semana</p>
+  <a href="#catalogo" class="btn-hero">Ver catálogo completo</a>
+</header>
+
+<section id="catalogo">
+  <h2>Nuestros <span>equipos disponibles</span></h2>
+  <div class="grid" id="grid-celulares"></div>
+</section>
+
+<footer>
+  <strong id="footer-tienda">Mi Tienda Celulares</strong><br>
+  <span id="footer-contacto">Consultanos por WhatsApp para más información</span>
+</footer>
+
+<noscript>
+  <p style="text-align:center;padding:40px;font-size:1.1rem">
+    Por favor habilitá JavaScript para ver el catálogo.
+  </p>
+</noscript>
+
+<script>
+/* ================================================================
+   ██████╗  ███████╗ ████████╗ ██╗ ██████╗   ███████╗
+   ██╔══██╗ ██╔════╝    ██╔══╝ ██║ ██╔══██╗  ██╔════╝
+   ██████╔╝ █████╗      ██║    ██║ ██████╔╝  ███████╗
+   ██╔═══╝  ██╔══╝      ██║    ██║ ██╔══██╗  ╚════██║
+   ██║      ███████╗    ██║    ██║ ██║  ██║  ███████║
+   ╚═╝      ╚══════╝    ╚═╝    ╚═╝ ╚═╝  ╚═╝  ╚══════╝
+
+   EDITÁ ESTA SECCIÓN PARA PERSONALIZAR TU CATÁLOGO
+================================================================ */
+
+const CONFIG = {
+
+  /* ── Datos de tu tienda ── */
+  tienda:    "Mi Tienda Celulares",
+  subtitulo: "Llevate tu cel hoy · Pagás cómodo cada semana",
+  whatsapp:  "5491112345678",  // ← Tu número con código de país, sin + ni espacios
+  moneda:    "ARS",            // ARS = pesos argentinos | USD | MXN | COP …
+
+  /* ── Planes de cuotas semanales ──
+     interesRate = porcentaje total sobre el precio base
+     Ejemplo: 0.15 = 15% de recargo sobre el precio contado            */
+  planes: [
+    { semanas: 4, interes: 0.10 },   // 10% de recargo en 4 semanas
+    { semanas: 6, interes: 0.18 },   // 18% de recargo en 6 semanas
+    { semanas: 8, interes: 0.28 },   // 28% de recargo en 8 semanas
+  ],
+
+  /* ── Celulares ──
+     Campos:
+       nombre    → nombre del equipo
+       precio    → precio contado en la moneda configurada
+       imagen    → URL de la foto (dejá "" para mostrar ícono genérico)
+       specs     → array de características (máx 4 recomendado)
+       badge     → etiqueta opcional: "MÁS VENDIDO" | "NUEVO" | "OFERTA" | ""
+  ─────────────────────────────────────────────────────────────────── */
+  celulares: [
+    {
+      nombre: "Samsung Galaxy A15",
+      precio: 180000,
+      imagen: "",
+      specs: ["6.5\" FHD+", "50 MP cámara", "5000 mAh", "4GB RAM / 128GB"],
+      badge: "MÁS VENDIDO",
+    },
+    {
+      nombre: "Motorola Moto G54",
+      precio: 210000,
+      imagen: "",
+      specs: ["6.5\" IPS", "50 MP cámara", "5000 mAh", "8GB RAM / 256GB"],
+      badge: "NUEVO",
+    },
+    {
+      nombre: "Xiaomi Redmi 13C",
+      precio: 150000,
+      imagen: "",
+      specs: ["6.74\" HD+", "50 MP cámara", "5000 mAh", "4GB RAM / 128GB"],
+      badge: "",
+    },
+    {
+      nombre: "Samsung Galaxy A35",
+      precio: 320000,
+      imagen: "",
+      specs: ["6.6\" AMOLED", "50 MP cámara", "5000 mAh", "6GB RAM / 128GB"],
+      badge: "OFERTA",
+    },
+    {
+      nombre: "Motorola Edge 50 Neo",
+      precio: 480000,
+      imagen: "",
+      specs: ["6.36\" pOLED", "50 MP cámara", "4310 mAh", "12GB RAM / 256GB"],
+      badge: "",
+    },
+    {
+      nombre: "iPhone 13",
+      precio: 900000,
+      imagen: "",
+      specs: ["6.1\" OLED", "12 MP doble cámara", "Face ID", "128GB"],
+      badge: "PREMIUM",
+    },
+  ],
+
+};
+
+/* ================================================================
+   CÓDIGO DE LA PÁGINA — no es necesario modificar nada debajo
+================================================================ */
+
+/* Formatear moneda */
+const fmt = (n) => new Intl.NumberFormat('es-AR', {
+  style: 'currency',
+  currency: CONFIG.moneda,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+}).format(n);
+
+/* Calcular cuota semanal */
+function calcCuota(precio, semanas, interes) {
+  return Math.ceil((precio * (1 + interes)) / semanas);
+}
+
+/* Construir link de WhatsApp */
+function linkWA(phone, semanas, cuota) {
+  const msg = `Hola! Me interesa el *${phone.nombre}*.\n`
+    + `Plan *${semanas} semanas* → ${fmt(cuota)}/semana.\n`
+    + `¿Está disponible?`;
+  return `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+}
+
+/* Ícono genérico si no hay imagen */
+const PHONE_ICON = `<div class="no-img">📱</div>`;
+
+/* Crear tarjeta HTML */
+function crearTarjeta(phone, idx) {
+  const planInicial = CONFIG.planes[0];
+  const cuotaInicial = calcCuota(phone.precio, planInicial.semanas, planInicial.interes);
+
+  const tabsHTML = CONFIG.planes.map((p, i) =>
+    `<button class="tab-btn${i === 0 ? ' active' : ''}"
+             onclick="selPlan(${idx}, ${p.semanas})"
+             data-semanas="${p.semanas}">
+       ${p.semanas} sem
+     </button>`
+  ).join('');
+
+  const specsHTML = phone.specs.map(s => `<span class="spec-pill">${s}</span>`).join('');
+  const imgHTML = phone.imagen
+    ? `<img src="${phone.imagen}" alt="${phone.nombre}" onerror="this.parentNode.innerHTML='${PHONE_ICON}'" />`
+    : PHONE_ICON;
+
+  const precioTotal = (phone.precio * (1 + planInicial.interes)).toFixed(0);
+  const waLink = linkWA(phone, planInicial.semanas, cuotaInicial);
+
+  return `
+  <div class="card" id="card-${idx}">
+    ${phone.badge ? `<span class="badge">${phone.badge}</span>` : ''}
+    <div class="card-img">${imgHTML}</div>
+    <div class="card-body">
+      <h3>${phone.nombre}</h3>
+      <div class="specs">${specsHTML}</div>
+      <div class="precio-base">
+        Precio contado: <strong id="precio-${idx}">${fmt(phone.precio)}</strong>
+      </div>
+      <div class="plan-tabs" id="tabs-${idx}">${tabsHTML}</div>
+      <div class="cuota-display">
+        <span class="cuota-label">Cuota semanal</span>
+        <span class="cuota-valor" id="cuota-${idx}">${fmt(cuotaInicial)}</span>
+        <span class="cuota-detalle" id="detalle-${idx}">
+          ${planInicial.semanas} semanas · total ${fmt(Math.ceil(phone.precio * (1 + planInicial.interes)))}
+        </span>
+      </div>
+      <a class="btn-wa" id="wa-${idx}" href="${waLink}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Consultar por WhatsApp
+      </a>
+    </div>
+  </div>`;
+}
+
+/* Seleccionar plan en una tarjeta */
+function selPlan(idx, semanas) {
+  const phone = CONFIG.celulares[idx];
+  const plan  = CONFIG.planes.find(p => p.semanas === semanas);
+  const cuota = calcCuota(phone.precio, semanas, plan.interes);
+  const total = Math.ceil(phone.precio * (1 + plan.interes));
+
+  document.getElementById(`cuota-${idx}`).textContent  = fmt(cuota);
+  document.getElementById(`detalle-${idx}`).textContent =
+    `${semanas} semanas · total ${fmt(total)}`;
+  document.getElementById(`wa-${idx}`).href = linkWA(phone, semanas, cuota);
+
+  const tabs = document.querySelectorAll(`#tabs-${idx} .tab-btn`);
+  tabs.forEach(t => t.classList.toggle('active', +t.dataset.semanas === semanas));
+}
+
+/* Renderizar todo */
+function renderizar() {
+  document.getElementById('titulo-tienda').textContent    = `📱 ${CONFIG.tienda}`;
+  document.getElementById('subtitulo-tienda').textContent = CONFIG.subtitulo;
+  document.getElementById('footer-tienda').textContent    = CONFIG.tienda;
+
+  const grid = document.getElementById('grid-celulares');
+  grid.innerHTML = CONFIG.celulares.map((p, i) => crearTarjeta(p, i)).join('');
+}
+
+renderizar();
+</script>
+</body>
+</html>
